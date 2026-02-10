@@ -1,0 +1,75 @@
+name: Update Cask
+
+on:
+  workflow_dispatch:
+    inputs:
+      cask:
+        description: "Cask to update (blurry or mirroreu)"
+        required: true
+        type: choice
+        options:
+          - blurry
+          - mirroreu
+      version:
+        description: "New version (without v prefix, e.g. 0.0.4)"
+        required: true
+        type: string
+  repository_dispatch:
+    types: [update-cask]
+
+permissions:
+  contents: write
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine params
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "cask=${{ github.event.client_payload.cask }}" >> "$GITHUB_OUTPUT"
+            echo "version=${{ github.event.client_payload.version }}" >> "$GITHUB_OUTPUT"
+            echo "repo=${{ github.event.client_payload.repo }}" >> "$GITHUB_OUTPUT"
+          else
+            CASK="${{ github.event.inputs.cask }}"
+            echo "cask=$CASK" >> "$GITHUB_OUTPUT"
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+            if [ "$CASK" = "blurry" ]; then
+              echo "repo=twttr/blurry" >> "$GITHUB_OUTPUT"
+            else
+              echo "repo=twttr/mirroreu" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Download and compute SHA256
+        id: sha
+        run: |
+          CASK="${{ steps.params.outputs.cask }}"
+          VERSION="${{ steps.params.outputs.version }}"
+          REPO="${{ steps.params.outputs.repo }}"
+          APP_NAME=$(echo "$CASK" | sed 's/^./\U&/')
+          curl -fSL -o artifact.zip \
+            "https://github.com/${REPO}/releases/download/v${VERSION}/${APP_NAME}-v${VERSION}.zip"
+          SHA=$(shasum -a 256 artifact.zip | awk '{print $1}')
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Update cask file
+        run: |
+          CASK="${{ steps.params.outputs.cask }}"
+          VERSION="${{ steps.params.outputs.version }}"
+          SHA="${{ steps.sha.outputs.sha256 }}"
+          sed -i "s/version \".*\"/version \"${VERSION}\"/" "Casks/${CASK}.rb"
+          sed -i "s/sha256 \".*\"/sha256 \"${SHA}\"/" "Casks/${CASK}.rb"
+          sed -i "s/sha256 :no_check/sha256 \"${SHA}\"/" "Casks/${CASK}.rb"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Casks/${{ steps.params.outputs.cask }}.rb"
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "Update ${{ steps.params.outputs.cask }} to ${{ steps.params.outputs.version }}"
+          git push
