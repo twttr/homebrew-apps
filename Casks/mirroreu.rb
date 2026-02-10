@@ -1,6 +1,6 @@
 cask "mirroreu" do
-  version "1.0"
-  sha256 :no_check
+  version "0.0.1"
+  sha256 "4645e129cfd6bd0db582eeef62023831b6a16d75c43263d22f9448496419567e"
 
   url "https://github.com/twttr/mirroreu/releases/download/v#{version}/Mirroreu-v#{version}.zip"
   name "Mirroreu"
