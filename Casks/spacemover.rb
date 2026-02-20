@@ -1,6 +1,6 @@
 cask "spacemover" do
   version "0.0.1"
-  sha256 :no_check
+  sha256 "48e4bf9341e4ee79b0af4ba18edccf22643ea167958b2af07f252369211626ae"
 
   url "https://github.com/twttr/SpaceMover/releases/download/v#{version}/SpaceMover-v#{version}.zip"
   name "SpaceMover"
