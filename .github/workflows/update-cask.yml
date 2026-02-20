@@ -10,6 +10,7 @@ on:
         options:
           - blurry
           - mirroreu
+          - spacemover
       version:
         description: "New version (without v prefix, e.g. 0.0.4)"
         required: true
@@ -37,11 +38,11 @@ jobs:
             CASK="${{ github.event.inputs.cask }}"
             echo "cask=$CASK" >> "$GITHUB_OUTPUT"
             echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
-            if [ "$CASK" = "blurry" ]; then
-              echo "repo=twttr/blurry" >> "$GITHUB_OUTPUT"
-            else
-              echo "repo=twttr/mirroreu" >> "$GITHUB_OUTPUT"
-            fi
+            case "$CASK" in
+              blurry)    echo "repo=twttr/blurry" >> "$GITHUB_OUTPUT" ;;
+              mirroreu)  echo "repo=twttr/mirroreu" >> "$GITHUB_OUTPUT" ;;
+              spacemover) echo "repo=twttr/SpaceMover" >> "$GITHUB_OUTPUT" ;;
+            esac
           fi
 
       - name: Download and compute SHA256
