@@ -12,7 +12,6 @@ brew tap twttr/apps
 
 | App | Description | Install |
 |-----|-------------|---------|
-| [Blurry](https://github.com/twttr/blurry) | Status bar utility for managing screen blur | `brew install --cask blurry` |
 | [Mirroreu](https://github.com/twttr/mirroreu) | Enables iPhone Mirroring in EU regions | `brew install --cask mirroreu` |
 
 ## Uninstall
